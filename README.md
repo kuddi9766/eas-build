@@ -12,3 +12,30 @@
 [![Expo Forums](https://img.shields.io/badge/Expo%20Forums-blue.svg)](https://forums.expo.dev/)
 
 This repository contains a set of libraries used by EAS Build service to process builds.
+
+name: Run tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18', '20', '22']
+    name: Test with Node ${{ matrix.node }} on Linux
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Setup ncc
+        run: npm install -g @vercel/ncc
+      - run: yarn install --frozen-lockfile --check-files
+      - run: yarn build
+      - run: yarn test
+      - run: yarn lint --max-warnings=0
